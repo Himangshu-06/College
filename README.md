@@ -4,11 +4,124 @@ Honestly, there’s nothing here worth your time. Move along. 😎
 
 
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+#include <ctype.h>
 
+#define ALPHABET_SIZE 26
+#define MAX_WORD_LENGTH 50
 
+// Trie node structure
+typedef struct TrieNode {
+    struct TrieNode *children[ALPHABET_SIZE];
+    bool isEndOfWord;
+} TrieNode;
+
+// Create a new trie node
+TrieNode* createNode() {
+    TrieNode *node = (TrieNode*)malloc(sizeof(TrieNode));
+    node->isEndOfWord = false;
+    for (int i = 0; i < ALPHABET_SIZE; i++) {
+        node->children[i] = NULL;
+    }
+    return node;
+}
+
+// Insert a word into the trie
+void insert(TrieNode *root, const char *word) {
+    TrieNode *current = root;
+    int len = strlen(word);
+    
+    for (int i = 0; i < len; i++) {
+        int index = tolower(word[i]) - 'a';
+        if (index < 0 || index >= ALPHABET_SIZE) continue; // Skip non-alphabetic chars
+        
+        if (current->children[index] == NULL) {
+            current->children[index] = createNode();
+        }
+        current = current->children[index];
+    }
+    current->isEndOfWord = true;
+}
+
+// Search for a word in the trie
+bool search(TrieNode *root, const char *word) {
+    TrieNode *current = root;
+    int len = strlen(word);
+    
+    for (int i = 0; i < len; i++) {
+        int index = tolower(word[i]) - 'a';
+        if (index < 0 || index >= ALPHABET_SIZE) return false;
+        
+        if (current->children[index] == NULL) {
+            return false;
+        }
+        current = current->children[index];
+    }
+    return (current != NULL && current->isEndOfWord);
+}
+
+// Free the trie memory
+void freeTrie(TrieNode *root) {
+    if (root == NULL) return;
+    
+    for (int i = 0; i < ALPHABET_SIZE; i++) {
+        if (root->children[i] != NULL) {
+            freeTrie(root->children[i]);
+        }
+    }
+    free(root);
+}
+
+int main() {
+    // 1000 random words
+    const char *words[] = {
+        "apple", "banana", "orange", "grape", "mango", "peach", "pear", "plum", "cherry", "melon",
+        "lemon", "lime", "kiwi", "papaya", "guava", "fig", "date", "apricot", "berry", "coconut",
+        "dog", "cat", "mouse", "elephant", "tiger", "lion", "bear", "wolf", "fox", "rabbit",
+        "horse", "cow", "pig", "sheep", "goat", "chicken", "duck", "goose", "turkey", "deer",
+        "zebra", "giraffe", "monkey", "gorilla", "panda", "koala", "kangaroo", "penguin", "seal", "whale",
+        "dolphin", "shark", "fish", "octopus", "squid", "crab", "lobster", "shrimp", "clam", "oyster",
+        "car", "bus", "train", "plane", "boat", "ship", "bicycle", "motorcycle", "truck", "van",
+        "red", "blue", "green", "yellow", "orange", "purple", "pink", "brown", "black", "white",
+        "happy", "sad", "angry", "excited", "calm", "nervous", "proud", "shy", "brave", "scared",
+        "run", "walk", "jump", "swim", "fly", "climb", "dance", "sing", "laugh", "cry",
+        "book", "pen", "pencil", "paper", "desk", "chair", "table", "computer", "phone", "tablet",
+        "house", "home", "building", "castle", "tower", "bridge", "road", "street", "path", "highway",
+        "mountain", "hill", "valley", "river", "lake", "ocean", "sea", "beach", "forest", "desert",
+        "tree", "flower", "grass", "plant", "leaf", "branch", "root", "seed", "fruit", "vegetable",
+        "sun", "moon", "star", "cloud", "rain", "snow", "wind", "storm", "lightning", "thunder",
+        "fire", "water", "earth", "air", "ice", "steam", "smoke", "ash", "dust", "sand",
+        "gold", "silver", "bronze", "copper", "iron", "steel", "aluminum", "platinum", "diamond", "ruby",
+        "food", "drink", "meal", "breakfast", "lunch", "dinner", "snack", "dessert", "bread", "butter",
+        "cheese", "milk", "egg", "meat", "chicken", "beef", "pork", "fish", "rice", "pasta",
+        "pizza", "burger", "sandwich", "salad", "soup", "cake", "cookie", "candy", "chocolate", "sugar",
+        "salt", "pepper", "spice", "herb", "garlic", "onion", "tomato", "potato", "carrot", "bean",
+        "doctor", "nurse", "teacher", "student", "lawyer", "engineer", "artist", "musician", "writer", "actor",
+        "farmer", "chef", "driver", "pilot", "sailor", "soldier", "police", "judge", "mayor", "president",
+        "spring", "summer", "autumn", "winter", "season", "month", "week", "day", "hour", "minute",
+        "second", "morning", "afternoon", "evening", "night", "dawn", "dusk", "noon", "midnight", "today",
+        "yesterday", "tomorrow", "now", "then", "soon", "later", "early", "late", "before", "after",
+        "king", "queen", "prince", "princess", "knight", "warrior", "hero", "villain", "wizard", "witch",
+        "dragon", "giant", "dwarf", "elf", "fairy", "mermaid", "unicorn", "phoenix", "griffin", "centaur",
+        "sword", "shield", "bow", "arrow", "spear", "axe", "hammer", "dagger", "knife", "gun",
+        "love", "hate", "peace", "war", "hope", "fear", "joy", "pain", "dream", "nightmare",
+        "friend", "enemy", "family", "parent", "child", "brother", "sister", "son", "daughter", "cousin",
+        "uncle", "aunt", "grandfather", "grandmother", "husband", "wife", "boy", "girl", "man", "woman",
+        "baby", "toddler", "teenager", "adult", "elder", "youth", "kid", "infant", "senior", "junior",
+        "big", "small", "large", "tiny", "huge", "giant", "mini", "medium", "short", "tall",
+        "long", "wide", "narrow", "thick", "thin", "heavy", "light", "strong", "weak", "hard",
+        "soft", "rough", "smooth", "sharp", "dull", "bright", "dark", "loud", "quiet", "fast",
+        "slow", "hot", "cold", "warm", "cool", "wet", "dry", "clean", "dirty", "new",
+        "old", "young", "fresh", "stale", "raw", "cooked", "sweet", "sour", "bitter", "salty",
+        "spicy", "mild", "delicious", "tasty", "yummy", "gross", "nasty", "good", "bad", "great",
+        "terrible", "awesome", "awful", "wonderful", "horrible", "beautiful", "ugly", "pretty", "handsome", "cute",
         "adorable", "lovely", "gorgeous", "stunning", "plain", "simple", "complex", "easy", "hard", "difficult",
         "start", "stop", "begin", "end", "open", "close", "enter", "exit", "arrive", "depart",
-        "come", "go", "stay", "leave", "bring", "take", "give", "receive", "send", "get",
+        "come", "go", "stay", "leave", "bring", "take", 
+"give", "receive", "send", "get",
         "buy", "sell", "trade", "exchange", "pay", "earn", "spend", "save", "waste", "lose",
         "find", "seek", "search", "look", "watch", "see", "hear", "listen", "smell", "taste",
         "touch", "feel", "think", "know", "learn", "teach", "study", "read", "write", "speak",
