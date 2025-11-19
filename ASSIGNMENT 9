@@ -1,0 +1,67 @@
+#include <stdio.h>
+#include <string.h>
+
+#define BASE 256
+#define PRIME 1000000007LL  // A large prime number
+
+void search(char *pat, char *txt) {
+    int M = strlen(pat);
+    int N = strlen(txt);
+    if (M > N) {
+        printf("Pattern longer than text, no match possible.\n");
+        return;
+    }
+
+    long long p = 0;  
+    long long t = 0;  
+    long long h = 1;  
+
+    // Computeinf BASE^(M-1) % PRIME
+    for (int i = 0; i < M - 1; i++) {
+        h = (h * BASE) % PRIME;
+    }
+
+    // Compute initial hash for pattern and first text window
+    for (int i = 0; i < M; i++) {
+        p = (BASE * p + pat[i]) % PRIME;
+        t = (BASE * t + txt[i]) % PRIME;
+    }
+
+    // Slideing the window over the text
+    for (int i = 0; i <= N - M; i++) {
+        if (p == t) {
+            int match = 1;
+            for (int j = 0; j < M; j++) {
+                if (txt[i + j] != pat [j]) {
+                    match = 0;
+                    break;
+                }
+            }
+            if (match) {
+                printf("Pattern found at index %d\n", i);
+            }
+        }
+
+        // Compute hash for next window
+        if (i < N - M) {
+            t = (BASE * (t - txt[i] * h) + txt[i + M]) % PRIME;
+            if (t < 0) t += PRIME;  
+        }
+    }
+}
+
+int main() {
+    char txt[10000];
+    char pat[1000];  
+
+    printf("Enter the long substring (text): ");
+    fgets(txt, sizeof(txt), stdin);
+    txt[strcspn(txt, "\n")] = '\0';  
+
+    printf("Enter the short substring (pattern): ");
+    fgets(pat, sizeof(pat), stdin);
+    pat[strcspn(pat, "\n")] = '\0';  
+
+    search(pat, txt);
+    return 0;
+}
